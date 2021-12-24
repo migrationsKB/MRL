@@ -1,0 +1,48 @@
+countries: [ 'GB', 'DE', 'SE', 'FR', 'IT', 'GR', 'ES', 'AT', 'HU', 'CH', 'PL', 'NL',
+             'BE','BG','CZ', 'DK',
+             'HR', 'CY', 'EE', 'FI',  'IE', 'LV', 'LT', 'LU',  'MT', 'PT', 'RO', 'SK',  'SI',
+             'IS', 'LI', 'NO' ]
+langs: [ 'en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv',
+         'bg', 'hr', 'cs', 'da','et', 'lv','lt','mt', 'pt', 'ro', 'sk', 'sl',
+         'no', 'is' ]
+twitter_supported: [ 'fr', 'en', 'es', 'de', 'it', 'pt', 'nl', 'no',  'sv','fi', 'da', 'pl', 'hu',
+                     'ar', 'ja', 'id', 'ko', 'tr', 'ru', 'fil', 'msa', 'zh-tw', 'zh-cn', 'hi', 'fa',
+                     'ur', 'th', 'en-gb', 'und'
+]
+twitterLangs: [ 'en',  'cs', 'da', 'de', 'el', 'es', 'fi', 'fr', 'hu', 'it', 'nl','no', 'pl', 'pt',
+                'ro', 'sv',
+                'ar', 'bn', 'fa', 'fil', 'he', 'hi', 'id', 'ja', 'ko', 'msa', 'th', 'tr', 'uk', 'ur',
+                'vi', 'zh-cn', 'zh-tw' ]
+EUCountries:
+  Austria: "AT" #
+  Belgium: "BE"
+  Bulgaria: "BG"
+  Croatia: "HR"
+  Cyprus: "CY"
+  Czech: "CZ"
+  Denmark: "DK"
+  Estonia: "EE"
+  Finland: "FI"
+  France: "FR"
+  Germany: "DE"
+  Greece: "GR"
+  Hungary: "HU"
+  Ireland: "IE"
+  Italy: "IT"
+  Latvia: "LV"
+  Lithuania: "LT"
+  Luxembourg: "LU"
+  Malta: "MT"
+  Netherlands: "NL"
+  Poland: "PL"
+  Portugal: "PT"
+  Romania: "RO"
+  Slovakia: "SK"
+  Slovenia: "SI"
+  Spain: "ES"
+  Sweden: "SE"
+EEA:
+  Iceland: "IS"
+  Liechtenstein: "LI"
+  Norway: "NO"
+  Switzerland: "CH"

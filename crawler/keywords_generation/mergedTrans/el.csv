@@ -1,0 +1,79 @@
+keyword,deepl,google,deepl==google
+παραβατικός,delinquent,delinquent,True
+μεσοαστός,middle-class,middle-aged,False
+λαθρομετανάστη,illegal immigrant,illegal immigrant,True
+Κούρδος,Kurd,Kurd,True
+Αφγανός,Afghan,Afghan,True
+εκπατρισμένος,expatriate,expatriate,True
+ελληναράς,Greek,Greek,True
+λαθρομετανάστης,illegal immigrant,illegal immigrant,True
+πρόσφυγας,refugee,refugee,True
+Μετανάστρια,immigrant,Immigrant,False
+μετανάστεψε,emigrated,emigrated,True
+αλβανός,Albanian,Albanian,True
+ξενιτεμένος,alien,expatriate,False
+προσφυγοπούλα,refugee girl,refugee girl,True
+τουρίστας,tourist,tourist,True
+ξένος,foreigner,foreign,False
+Μπαγκλαντεσιανός,Bangladeshi,Bangladeshi,True
+Παλαιστίνιος,Palestinian,Palestinian,True
+προσφυγομάνα,refugee,refugee,True
+Σαχραουί,Sahrawi,Σαχραουί,False
+προσφυγόπουλο,refugee,refugee,True
+λαθρομετανάστρια,illegal immigrant,illegal immigrant,True
+υπήκοος,national,national,True
+ρατσιστής,racist,racist,True
+μετανάστρια,immigrant,immigrant,True
+έποικος,settler,settler,True
+μεταναστης,immigrant,migrant,False
+μουσουλμάνος,muslim,Muslim,False
+Σύριος,Syrian,Syrian,True
+μετανάστις,immigrant,immigrant,True
+προσφυγας,refugee,refugee,True
+μεταναστευτικός,migrant,migratory,False
+προσφυγάκι,refugee,refugee,True
+πρόσφυξ,refugee,refugee,True
+μετανάστη,migrant,immigrant,False
+πρόσφυγες-μετανάστες,refugees-migrants,refugees immigrants,False
+μετανάστριας,migrant,immigrant,False
+πρόσφυγες-,refugees-,refugees-,True
+Πρόσφυγας,Refugee,Refugee,True
+αφγανός,Afghan,Afghan,True
+άπατρις,stateless,stateless,True
+προσφυγοπούλας,refugee girl,refugee,False
+πρόσφυγος,refugee,refugee,True
+Ρατσιστής,Racist,Racist,True
+Πακιστανός,Pakistani,Pakistani,True
+σύριος,Syrian,Syrian,True
+διωγμένος,persecuted,persecuted,True
+εκτοπισμένος,displaced,displaced,True
+άστεγος,homeless,homeless,True
+κούρδος,Kurdish,Kurd,False
+ασυνόδευτος,unaccompanied,unaccompanied,True
+αλλοδαπός,alien,foreign,False
+πακιστανός,Pakistani,Pakistani,True
+πολιτογραφημένος,naturalized,naturalized,True
+Αλλοδαπός,Alien,Foreign,False
+πρόσφυγα,refugee,refugee,True
+βιοπαλαιστής,breadwinner,breadwinner,True
+διωκόμενος,persecuted,persecuted,True
+προσφυγα,refugee,refugee,True
+ξεριζωμένος,uprooted,uprooted,True
+μετανάστες,migrants,Immigrants,False
+δουλέμπορος,slave trader,slaver,False
+εργαζόμενος,worker,employee,False
+µετανάστης,immigrant,Immigrant,False
+λαθρεπιβάτης,stowaway,stowaway,True
+κατατρεγμένος,persecuted,persecuted,True
+λαθραίος,stowaway,stealthy,False
+αντιρατσιστής,anti-racist,anti-racist,True
+προσφύγων,refugee,refugees,False
+μεροκαματιάρης,day laborer,jobber,False
+συνοριοφύλακας,border guard,border guard,True
+Σουδανός,Sudanese,Sudan,False
+Μετανάστης,Immigrant,Migrant,False
+πρόσφυγες,refugees,refugees,True
+μετανάστης,migrant,migrant,True
+Λαθρομετανάστης,illegal immigrant,Illegal immigrant,False
+Πρόσφυγα,Refugee,Refugee,True
+ανιθαγενής,stateless,stateless,True
