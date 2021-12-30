@@ -2,35 +2,28 @@ import json
 import os
 from typing import Any, List, Tuple
 import itertools
-import re
+import string
 
 import pandas as pd
 from nltk.tokenize import TweetTokenizer
 import unicodedata
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+import simplemma
+from simplemma import text_lemmatizer
+import stopwordsiso
 
 from utils.reader import load_config
 from utils.utils import timing
+from preprocessor.defines import *
 
 tt = TweetTokenizer()
 
 SPECIAL_CHARS = ['&nbsp;', '&lt;', '&gt;', '&amp;', '&quot;', '&apos;', '&cent;', '&pound;', '&yen;', '&euro;',
                  '&copy;', '&reg;']
 
+
 # https://gist.github.com/slowkow/7a7f61f495e3dbb7e3d767f97bd7304b
-# https://github.com/s/preprocessor/blob/master/preprocessor/defines.py
-RESERVED_WORDS_PATTERN = re.compile(r'\b(?<![@#])(RT|FAV)\b')
-try:
-    # UCS-4
-    EMOJIS_PATTERN = re.compile(u'([\U00002600-\U000027BF])|([\U0001f300-\U0001f64F])|([\U0001f680-\U0001f6FF])')
-except re.error:
-    # UCS-2
-    EMOJIS_PATTERN = re.compile(
-        u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
-
-SMILEYS_PATTERN = re.compile(r"(\s?:X|:|;|=)(?:-)?(?:\)+|\(|O|D|P|S|\\|\/\s){1,}", re.IGNORECASE)
-
 
 def get_entities_positions(entities: Any, entity_name: str) -> List[Tuple]:
     """
@@ -59,71 +52,107 @@ def entities_in_text(text, entities, entity_name=""):
     return [text[pos[0]:pos[1]] for pos in positions]
 
 
-def preprocessing_one_tweet(tweet, forID, remove_emoticons=False, unidecoded=False):
+def preprocessing_one_tweet(tweet, crawled=False, tp=False, lid=False):
     """
-    To preprocess each tweet: remove hashtags (or only "#"), remove urls and give "<USER>"
-    unidecoding
-    remove html tags
-    :param tweet:
-    :param forID: if the preprocessing is for language identification.
+    Preprocessing one tweet.
+    :param tweet: it is text if crawled is False.
+    :param lang: language.
+    :param crawled:
+    :param tp: if for topic modeling, extra: remove stopwords, remove numbers, remove punctuations.
+    :param lid: language identification
+    :param remove_emoticons:
+    :param unidecoded:
     :return:
     """
     # for ID, pure text without removing anything
-    text = tweet['text']
+    if crawled:
+        text = tweet['text']
+    else:
+        text = tweet
     # print(text)
 
-    # remove urls, mentions, or hashtags.
-    if "entities" in tweet:
-        entities = tweet['entities']
-        # print(entities)
-        hashtags = None
-        user_mentions = None
-        urls = None
-        if "hashtags" in entities:
-            hashtags = entities_in_text(text, entities, "hashtags")
-        if "mentions" in entities:
-            user_mentions = entities_in_text(text, entities, "mentions")
-        if "urls" in entities:
-            urls = entities_in_text(text, entities, "urls")
+    # remove urls, mentions, or hashtags from crawled tweets.
+    if crawled:
+        # if it is crawled tweets, "entities" information is crawled.
+        if "entities" in tweet:
+            entities = tweet['entities']
+            # print(entities)
+            hashtags = None
+            user_mentions = None
+            urls = None
+            if "hashtags" in entities:
+                hashtags = entities_in_text(text, entities, "hashtags")
+            if "mentions" in entities:
+                user_mentions = entities_in_text(text, entities, "mentions")
+            if "urls" in entities:
+                urls = entities_in_text(text, entities, "urls")
 
-        if hashtags is not None:
-            for hashtag in hashtags:
-                if forID:
-                    # language identification, hashtags can be transferable between languages.
-                    text = text.replace(hashtag, "")
-            text = text.replace("#", '')
+            if hashtags is not None:
+                for hashtag in hashtags:
+                    if lid:
+                        # language identification, hashtags can be transferable between languages.
+                        text = text.replace(hashtag, "")
+                text = text.replace("#", '')
 
-        if user_mentions is not None:
-            for x in user_mentions:
-                text = text.replace(x, "")
+            if user_mentions is not None:
+                for x in user_mentions:
+                    text = text.replace(x, "")
 
-        if urls is not None:
-            for url in urls:
-                text = text.replace(url, "")
+            if urls is not None:
+                for url in urls:
+                    text = text.replace(url, "")
+    else:
+        # remove urls
+        text = Patterns.URL_PATTERN.sub(r'', text)
+        # remove user mentions
+        text = Patterns.MENTION_PATTERN.sub(r'', text)
+        if lid:
+            # remove hashtags:
+            text = Patterns.HASHTAG_PATTERN.sub(r'', text)
+        # remove "#"
+        text = text.replace("#", '')
 
-    # remove accented characters
-    if unidecoded:
-        text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
-    # remove white strings
-    text = text.replace('\n', '').replace('\s', '').replace('\r', '')
     # remove special chars, starting with &.
     for CHAR in SPECIAL_CHARS:
         text = text.replace(CHAR, '')
+    # remove reserved words
+    text = Patterns.RESERVED_WORDS_PATTERN.sub(r'', text)
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
 
-    if remove_emoticons:
+    if tp or lid:
         # remove emojis
-        text = EMOJIS_PATTERN.sub(r'', text)
+        text = Patterns.EMOJIS_PATTERN.sub(r'', text)
         # remove smileys
-        text = SMILEYS_PATTERN.sub(r'', text)
+        text = Patterns.SMILEYS_PATTERN.sub(r'', text)
+        # remove accented characters
 
-    tokenized = tt.tokenize(text)
-    if len(tokenized) > 1:
-        return text
+    # special for topic modeling:
+    if tp:
+        # remove numbers
+        text = Patterns.NUMBERS_PATTERN.sub(r'', text)
+        # remove punctuations
+        text = text.translate(str.maketrans('', '', string.punctuation))
+
+        # lower-cased, tokenized and lemmatized
+        text = text_lemmatizer(text.lower(), langdata=langdata)
+        # remove stopwords
+        inter = set(text).intersection(stopwords)
+        for i in inter:
+            text.remove(i)
+
+        if len(text) > 1:
+            return ' '.join(text)
+
     else:
-        print(text)
+        # tokenized = tt.tokenize(text)
+        # if len(tokenized) > 2:
+        #     # remove unnecessary characters.
+        #     return ' '.join(text.split())
+        # else:
+        return text
 
 
-def preprocessing_files_by_lang(lang_code, output_dir):
+def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
     """
     if lang_code is "und", will use langid mode to preprocess tweets
     :param lang_code:
@@ -140,6 +169,7 @@ def preprocessing_files_by_lang(lang_code, output_dir):
     dates = []
     ids = []
     for country in countries:
+        print(country)
         test_file = f'output/preprocessed/restructured/{country}-{lang_code}.json'
 
         with open(test_file) as f:
@@ -147,8 +177,7 @@ def preprocessing_files_by_lang(lang_code, output_dir):
         # for tweet_id, tweet in dict(itertools.islice(data.items(), example_nr)).items():
         for tweet_id, tweet in data.items():
             # preprocessed_text_for_langid = preprocessing_one_tweet(tweet, True)
-            preprocessed_text = preprocessing_one_tweet(tweet, False)
-
+            preprocessed_text = preprocessing_one_tweet(tweet, crawled=crawled, tp=tp, lid=lid)
             if preprocessed_text is not None:
                 # print(preprocessed_text)
                 # original_texts.append(tweet['text'])
@@ -159,7 +188,7 @@ def preprocessing_files_by_lang(lang_code, output_dir):
 
                 countries_.append(country)
 
-                # print('*' * 40)
+                print('*' * 40)
             count += 1
     df['id'] = ids
     df['created_at'] = dates
@@ -172,35 +201,19 @@ def preprocessing_files_by_lang(lang_code, output_dir):
     print(len(preprocessed_texts))
 
 
-def main():
-    country_code = "DE"
+if __name__ == '__main__':
     lang_code = "en"
     example_nr = 10
-    output_dir = "output/preprocessed/forBERT"
-    preprocessing_files_by_lang(lang_code=lang_code, output_dir=output_dir)
+    output_dir = "output/preprocessed/forTP"
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
 
+    tp = True  # for topic modeling
+    crawled = True  # for crawled tweets
+    lid = False  # for language identification
 
-if __name__ == '__main__':
-    filepath = os.path.join("output/preprocessed/forBERT", 'en.csv')
-    df = pd.read_csv(filepath)
-    print(df.head(3))
-    # shuffle,
-    df = shuffle(df)
-
-    print('LEN: ', len(df))
-    df= df.drop_duplicates(subset='preprocessed_text')
-    print('LEN: ', len(df))
-
-    print(df.head(3))
-    train, val = train_test_split(df, test_size=0.05)
-    train_texts = "\n".join(train['preprocessed_text'].tolist())
-    val_texts = "\n".join(val['preprocessed_text'].tolist())
-
-    savefile_train = os.path.join("output/preprocessed/forBERT", 'en_train.txt')
-    savefile_val = os.path.join("output/preprocessed/forBERT", 'en_val.txt')
-
-    with open(savefile_train, 'w') as file:
-        file.write(train_texts)
-
-    with open(savefile_val, 'w') as file:
-        file.write(val_texts)
+    # lemmatizer
+    if tp:
+        langdata = simplemma.load_data(lang_code)
+        stopwords = stopwordsiso.stopwords(lang_code)
+        preprocessing_files_by_lang(lang_code=lang_code, output_dir=output_dir, crawled=crawled, tp=tp, lid=lid)

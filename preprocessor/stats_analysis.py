@@ -15,18 +15,21 @@ def get_all_languages(data_dir: str):
     :param data_dir: the data directory to inspect
     :return: a dictionary of language and its number of tweets.
     """
-    lang_dict = defaultdict(int)
+    lang_dict = defaultdict(list)
 
     for file in glob(data_dir + '/**/**.gz', recursive=True):
         data = read_gz_file(file)
         for tweet in data['data']:
             lang = tweet['lang']
-            lang_dict[lang] += 1
-    return lang_dict
+            tweet_id = tweet['id']
+            if tweet_id not in lang_dict[lang]:
+                lang_dict[lang].append(tweet_id)
+    stats_dict = {lang: len(list(set(tweet_ids))) for lang, tweet_ids in lang_dict.items()}
+    return stats_dict
 
 
 @timing
-def get_stats_country_lang(stats_file: str, by_country: Any = None, batch="batch3") -> None:
+def get_stats_country_lang(stats_file: str, by_country: Any = None, batch=None) -> None:
     """
     Get statistics of crawled tweets
     :param stats_file: filepath to save the statistics
@@ -46,7 +49,7 @@ def get_stats_country_lang(stats_file: str, by_country: Any = None, batch="batch
         print(countries)
         for country in countries:
             print(country)
-            crawled_data_path = f"output/crawled/{country}/{batch}"
+            crawled_data_path = f"output/crawled/{country}/"
             lang_dict = get_all_languages(crawled_data_path)
             print(lang_dict)
             stats_dict[country] = lang_dict
@@ -55,5 +58,5 @@ def get_stats_country_lang(stats_file: str, by_country: Any = None, batch="batch
 
 
 if __name__ == '__main__':
-    stats_file_ = os.path.join('output', 'stats', 'crawled_hu.csv')
-    get_stats_country_lang(stats_file_, by_country="HU", batch="batch3")
+    stats_file_ = os.path.join('output', 'stats', 'crawled_all.csv')
+    get_stats_country_lang(stats_file_, None)
