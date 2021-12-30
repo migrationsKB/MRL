@@ -261,11 +261,9 @@ if __name__ == '__main__':
     # lang = "ga"
     # main(API_NAME, COUNTRY_ISO2, [ga_keywords], 0, "2013", "2022", len(ga_keywords), lang, "und")
 
-
     # batch two, collecting tweets with specific languages.
     # infile = os.path.join(cwd, 'crawler', 'config', 'keywords', 'all_2_dict.json')
     # second batch:
-
 
     ## third batch, mixed languages/
     # countries:['GB', 'DE', 'SE', 'FR', 'IT', 'GR', 'ES', 'AT', 'HU', 'CH', 'PL', 'NL']
@@ -273,7 +271,7 @@ if __name__ == '__main__':
     #     # 'HR', 'CY', 'EE', 'FI',  'IE', 'LV', 'LT', 'LU',  'MT', 'PT', 'RO', 'SK',  'SI',
     #     #  'IS', 'LI', 'NO']
     API_NAME = "migrationsKB"
-    COUNTRY_ISO2 = "FI"
+    COUNTRY_ISO2 = None
 
     # batch3. don't differentiate languages. twitter can differentiate.
     infile = os.path.join(cwd, 'crawler', 'config', 'keywords', 'all_2.json')
