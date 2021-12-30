@@ -1,7 +1,8 @@
 output/
 transformers/
+adapter-transformers/
 datasets/
-datasets/xtreme
+datasets/xtreme/
 crawler/config/credentials.yaml
 crawler/config/crucial-raceway-334422-f795563b1724.json
 adapter-transformers-master.zip
@@ -9,3 +10,7 @@ architecture-tp.pages
 Gernam_toxic.ipynb
 special_chars.txt
 test/
+D5.4
+OCTIS/
+mlruns/
+sentencepiece/
