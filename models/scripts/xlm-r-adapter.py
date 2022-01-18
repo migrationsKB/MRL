@@ -1,30 +1,60 @@
-import os
+import argparse
 
 import numpy as np
-import transformers
-import pandas as pd
-from datasets import Dataset
-from sklearn.metrics import f1_score, accuracy_score, recall_score
+from sklearn.metrics import f1_score, recall_score
 from sklearn.metrics import classification_report
-from transformers import AutoConfig, AutoModelWithHeads, AutoTokenizer, TrainingArguments, AdapterTrainer, \
-    EvalPrediction, PfeifferConfig, PfeifferInvConfig, AutoModelForSequenceClassification
+from transformers import AutoModelWithHeads, AdapterTrainer, PfeifferConfig, PfeifferInvConfig, TrainingArguments, EvalPrediction
 
-lang = "fi"
+from models.scripts.utils.data import *
+from models.scripts.utils.utils import *
+
+parser = argparse.ArgumentParser(description='Fine tuning xlmr modeling with SA or HSD')
+parser.add_argument('--lang_code', type=str, default="en", help="The language of the dataset")
+parser.add_argument('--task', type=str, default="sa", help="sa or hsd")
+parser.add_argument('--checkpoint', type=str, default="cardiffnlp/twitter-xlm-roberta-base", help="model from huggingface..")
+args = parser.parse_args()
+
+lang = args.lang_code
 lr_rate = 1e-4
 num_train_epochs = 6
-logging_steps = 10
-batch_size = 64
-num_labels = 3
-eval_steps = 20
+logging_steps = 20
+batch_size = 8  # SERVER
+
+eval_steps = 100
 seed = 42
 
-output_dir = f"output/twitter_xlmr_sentiment/{lang}/"
+# output_dir = f"output/twitter_xlmr_sentiment/{lang}/"
+# output_dir = f"output/xlmr_sentiment/{lang}/"
 # checkpoint = "cardiffnlp/twitter-xlm-roberta-base"
+# checkpoint = "xlm-roberta-base"
+
+# output_dir = f"output/twitter_xlmr_hatespeech/{lang}/"
+if args.task == "sa":
+    num_labels = 3
+    output_dir = f"output/twitter_xlmr_sentiments/{lang}/"
+    dataset_path = f"datasets/sentiment_analysis/{lang}/preprocessed"
+    adapter_name = f"sentiment-{lang}"
+    print(f"dataset path: {dataset_path}")
+elif args.task == "hsd":
+    num_labels = 2
+    output_dir = f"output/xlmr_hatespeech/{lang}/"
+    dataset_path = f"datasets/hate_speech_detection/{lang}/preprocessed"
+    adapter_name = f"hsd-{lang}"
+    print(f"dataset path: {dataset_path}")
+else:
+    num_labels = None
+    output_dir = None
+    dataset_path = None
+    adapter_name = None
+    print('Task can either be sentiment analysis (sa) or hate speech detection (hsd)')
 
 # https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment
-checkpoint = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+# checkpoint = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 # dataset_path = f"datasets/sentiment_analysis/hu/preprocessed/"
-dataset_path = "datasets/XED/preprocessed/fi/"
+# dataset_path = f"datasets/XED/preprocessed/{lang}/"
+# try:
+# dataset_path = f"datasets/sentiment_analysis/{lang}/preprocessed"
+# dataset_path = f"datasets/hate_speech_detection/HateXplain/preprocessed/"
 
 
 # fine-tune either model.
@@ -35,63 +65,17 @@ dataset_path = "datasets/XED/preprocessed/fi/"
 # https://huggingface.co/DaNLP/da-xlmr-ned
 # dutch : dutch_social
 # migration movement data: https://zenodo.org/record/2536590
+# initialize tokenizer and model.
+tokenizer, model = load_model_tokenizer(args.checkpoint, num_labels, heads=False, classify=True)
 
-def load_data(dataset, dataset_path, sample_nr):
-    """
-    Load data from dataset for fine-tuning.
-    :param dataset:
-    :param dataset_path:
-    :param sample_nr:
-    :return:
-    """
-    df = pd.read_csv(os.path.join(dataset_path, f"{dataset}.csv"))
-    df.label = df.label.astype(int)
-    if sample_nr:
-        df = df.sample(sample_nr)
-    print(dataset)
-    print(df['label'].value_counts())
-    return df
-
-
-train_df = load_data("train", dataset_path, None)
-dev_df = load_data("val", dataset_path, None)
-test_df = load_data("test", dataset_path, None)
-
-# https://huggingface.co/docs/datasets/loading_datasets.html
-train = Dataset.from_pandas(train_df)
-dev = Dataset.from_pandas(dev_df)
-test = Dataset.from_pandas(test_df)
-
-tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
-
-
-def tokenize_function(examples):
-    # to solve the error of stack dim, define max_length.
-    return tokenizer(examples["text"], max_length=512, padding="max_length", truncation=True)
-    # return tokenizer(examples["text"], padding=True, truncation=True)
-
-
-train = train.map(tokenize_function, batched=True)
-dev = dev.map(tokenize_function, batched=True)
-test = test.map(tokenize_function, batched=True)
-
-# The transformers model expects the target class column to be named "labels"
-train.rename_column_("label", "labels")
-dev.rename_column_("label", "labels")
-test.rename_column_("label", "labels")
-
-# Transform to pytorch tensors and only output the required columns
-train.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
-dev.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
-test.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
-
-config = AutoConfig.from_pretrained(checkpoint, num_labels=num_labels)
-# model = AutoModelWithHeads.from_pretrained(checkpoint, config=config)
-model = AutoModelForSequenceClassification.from_pretrained(checkpoint, config= config)
+# loading data
+train = load_data(tokenizer, "train", dataset_path, sample_nr=None)
+val = load_data(tokenizer, "val", dataset_path, sample_nr=None)
+test = load_data(tokenizer, "test", dataset_path, sample_nr=None)
 
 # train an adapter
-adapter_name = f"sentiment-{lang}"
-## mad-x 2.0
+print('adapter name: ', adapter_name)
+# mad-x 2.0
 # https://docs.adapterhub.ml/adapters.html?highlight=invertible
 # invertible adapters are for language adapters.
 adapter_config = PfeifferConfig(leave_out=[11])
@@ -104,7 +88,7 @@ model.train_adapter(adapter_name)
 training_args = TrainingArguments(
     learning_rate=lr_rate,
     num_train_epochs=num_train_epochs,
-    logging_dir= os.path.join(output_dir, "logs"),
+    logging_dir=os.path.join(output_dir, "logs"),
     logging_steps=logging_steps,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
@@ -136,7 +120,7 @@ trainer = AdapterTrainer(
     model=model,
     args=training_args,
     train_dataset=train,
-    eval_dataset=dev,
+    eval_dataset=val,
     compute_metrics=compute_accuracy,
 )
 
@@ -164,5 +148,8 @@ test_preds = np.argmax(test_preds_raw, axis=-1)
 print(out)
 test_preds_raw_path = os.path.join(output_dir, f"preds_test.txt")
 np.savetxt(test_preds_raw_path, test_preds_raw)
+report = classification_report(test_labels, test_preds, digits=3)
+print(report)
 
-print(classification_report(test_labels, test_preds, digits=3))
+with open(os.path.join(output_dir, "results.txt"), 'w') as f:
+    f.write(str(report))
