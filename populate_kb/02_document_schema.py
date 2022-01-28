@@ -1,13 +1,12 @@
-import pylode
-from pylode.common import MakeDocco
+from pylode.ontdoc import OntDoc
+
 
 def main():
-    f = 'input/migrationsKB_schema.ttl'
+    f = 'populate_kb/input/mgkb_schema.ttl'
+    output = "populate_kb/input/mgkb_schema.html"
     print('making ontdoc for {}'.format(f))
-    h = MakeDocco(input_data_file=f)
-    h.document(destination=f.replace('.ttl', '.html'))
-    h = MakeDocco(input_data_file=f, outputformat="md")
-    h.document(destination=f.replace(".ttl", ".md"))
+    OntDoc(f).make_html(destination=output)
+
 
 if __name__ == '__main__':
     main()
