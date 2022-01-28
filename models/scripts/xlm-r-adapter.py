@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 from sklearn.metrics import f1_score, recall_score
 from sklearn.metrics import classification_report
-from transformers import AutoModelWithHeads, AdapterTrainer, PfeifferConfig, PfeifferInvConfig, TrainingArguments, EvalPrediction
+from transformers import AdapterTrainer, PfeifferConfig, PfeifferInvConfig, TrainingArguments, EvalPrediction
 
 from models.scripts.utils.data import *
 from models.scripts.utils.utils import *
