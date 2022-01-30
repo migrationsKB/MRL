@@ -1,4 +1,29 @@
 # MigrationsKB
+**Multilingual MigrationskB (MGKB)** is a mulitlingual extended version of English MGKB.
+The tweets geotagged with Geo location from 32 European Countries
+( _Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech, Denmark, Estonia, Finland, France,
+Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands,
+Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, Iceland, Liechtenstein, Norway, 
+Switzerland, the United Kingdom_ ) are extracted and filtered by 11 languages
+(_English, French, Finnish, German, Greek, Dutch, Hungarian, Italian, Polish, Spain, Swedish_). 
+Metadata information about the tweets, such as __Geo information (place name, coordinates, country code)__
+ are included. **MGKB**  contains sentiments, offensive and hate speeches, topics, hashtags, user mentions in RDF format.
+The schema of **MGKB** is an extension of TweetsKB for migration related information. 
+Moreover, to associate and represent the potential economic and social factors driving 
+the migration flows, the data from Eurostat  and FIBO ontology was used. To represent 
+multilinguality, the CIDOC Conceptual Reference Model (CIDOC-CRM) is used. 
+The extracted economic indicators, i.e., GDP Growth Rate, Total Unemployment Rate, 
+Youth Unemployment Rate, Long-term Unemployment Rate and Income per househould,
+are connected with each tweet in RDF using geographical and temporal dimensions. 
+
+
+Please contact **Yiyi Chen (yiyi.chen@partner.kit.edu)** for pretrained models (Sentiment analysis/hate speech detection/ETM) if necessary.
+
+ 
+## Resources
+
+MGKB TTL files and topic words in 11 Languages : https://zenodo.org/record/5918508 
+
 
 ## Overall Framework
 
