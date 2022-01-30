@@ -1,4 +1,4 @@
-# MigrationsKB
+# Multilingual MigrationsKB
 **Multilingual MigrationskB (MGKB)** is a mulitlingual extended version of English MGKB.
 The tweets geotagged with Geo location from 32 European Countries
 ( _Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech, Denmark, Estonia, Finland, France,
@@ -23,7 +23,6 @@ Please contact **Yiyi Chen (yiyi.chen@partner.kit.edu)** for pretrained models (
 ## Resources
 
 MGKB TTL files and topic words in 11 Languages : https://zenodo.org/record/5918508 
-
 
 ## Overall Framework
 
