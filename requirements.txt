@@ -13,9 +13,9 @@ scipy~=1.7.3
 dataclasses~=0.8
 filelock~=3.4.0
 packaging~=21.3
-ipython~=7.30.1
+ipython
 datasets~=1.16.1
-pillow~=8.4.0
+pillow
 sacremoses~=0.0.46
 tokenizers~=0.10.3
 six~=1.15.0
