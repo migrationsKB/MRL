@@ -163,6 +163,7 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
     count = 0
     # original_texts = []
     preprocessed_texts = []
+    preprocessed_texts_cl = []
     # preprocessed_texts_langid = []
     countries = load_config()['countries']
     countries_ = []
@@ -177,12 +178,14 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
         # for tweet_id, tweet in dict(itertools.islice(data.items(), example_nr)).items():
         for tweet_id, tweet in data.items():
             # preprocessed_text_for_langid = preprocessing_one_tweet(tweet, True)
+            preprocessed_text_cl = preprocessing_one_tweet(tweet, crawled=crawled, tp=False, lid=False)
             preprocessed_text = preprocessing_one_tweet(tweet, crawled=crawled, tp=tp, lid=lid)
             if preprocessed_text is not None:
                 # print(preprocessed_text)
                 # original_texts.append(tweet['text'])
                 dates.append(tweet['created_at'])
                 preprocessed_texts.append(preprocessed_text)
+                preprocessed_texts_cl.append(preprocessed_text_cl)
                 # preprocessed_texts_langid.append(preprocessed_text_for_langid)
                 ids.append(tweet_id)
 
@@ -194,6 +197,7 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
     df['created_at'] = dates
     # df['text'] = original_texts
     df['preprocessed_text'] = preprocessed_texts
+    df["preprocessed_cl"] = preprocessed_texts_cl
     df['country'] = countries_
     # df['preprocessed_text_langid'] = preprocessed_texts_langid
     df.to_csv(os.path.join(output_dir, f'{lang_code}.csv'), index=False)
