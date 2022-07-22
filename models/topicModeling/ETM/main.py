@@ -11,12 +11,12 @@ import os
 import math
 import shutil
 
-from torch import nn, optim
+from torch import optim
 from gensim.models import KeyedVectors
 
-from models.topicModeling.ETM import data
-from models.topicModeling.ETM.etm import ETM
-from models.topicModeling.ETM.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity
+from models.topicModeling.ETModel import data
+from models.topicModeling.ETModel.etm import ETM
+from models.topicModeling.ETModel.utils import nearest_neighbors, get_topic_coherence, get_topic_diversity
 
 parser = argparse.ArgumentParser(description='The Embedded Topic Model')
 

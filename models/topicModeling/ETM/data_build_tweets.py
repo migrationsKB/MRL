@@ -1,6 +1,3 @@
-import random
-import re
-import string
 import os
 import pickle
 
@@ -250,15 +247,16 @@ def read_data(data_path, output_path):
 
 if __name__ == '__main__':
     # de, el, en, es, fi, fr,hu, it, nl, pl
-    lang_code = "el"
-    data_dir = "output/preprocessed/forTP/"
-    print(data_dir)
-    lang_data_dir = os.path.join(data_dir, f"{lang_code}")
-    if not os.path.exists(lang_data_dir):
-        os.mkdir(lang_data_dir)
-    data_path = os.path.join(data_dir, f"{lang_code}.csv")
-    output_path = os.path.join(lang_data_dir, f"{lang_code}_built.csv")
-    print(data_path)
+    for lang_code in ['en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']:
+        # lang_code = "el"
+        data_dir = "output/preprocessed/forTP/"
+        print(data_dir)
+        lang_data_dir = os.path.join(data_dir, f"{lang_code}")
+        if not os.path.exists(lang_data_dir):
+            os.mkdir(lang_data_dir)
+        data_path = os.path.join(data_dir, f"{lang_code}.csv")
+        output_path = os.path.join(lang_data_dir, f"{lang_code}_built.csv")
+        print(data_path)
 
-    texts = read_data(data_path, output_path)
-    build_data(texts, lang_code)
+        texts = read_data(data_path, output_path)
+        build_data(texts, lang_code)

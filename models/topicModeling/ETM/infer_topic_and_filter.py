@@ -1,25 +1,22 @@
 from __future__ import print_function
 
 import argparse
-import torch
 import pickle
 import numpy as np
 import os
 import json
-from glob import glob
-import random
 
 import matplotlib.pyplot as plt
 import scipy.io
 from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 from sklearn import cluster
 import pandas as pd
+import torch
 from torch import nn
 from numpy import dot
 from numpy.linalg import norm
 
-from models.topicModeling.ETM import data
+from models.topicModeling.ETModel import data
 
 parser = argparse.ArgumentParser(description='Get confidence from centroid with ETM....')
 parser.add_argument('--lang_code', type=str, default="de", help="the language code for the ETM model")
@@ -330,8 +327,8 @@ if __name__ == '__main__':
     tokens, counts, vocab, word2id, id2word = load_data_and_vocab(data_dir)
     df_file = os.path.join(data_dir, f"{args.lang_code}_non_empty.csv")
     df = pd.read_csv(df_file)
-    model_path_pattern = f"output/models/ETM/{args.lang_code}/best/etm_tweets_K_{num_topics}_*"
-    model_path = glob(model_path_pattern)[0]
+    model_path = f"output/models/ETM/{args.lang_code}_{num_topics}"
+    # model_path = glob(model_path_pattern)[0]
     # model_path = "output/models/ETM/de/etm_tweets_K_50_Htheta_800_Optim_adam_Clip_0.0_ThetaAct_relu_Lr_0.005_Bsz_1000_RhoSize_300_trainEmbeddings_0_val_loss_2.496855906969676e+29_epoch_195"
     print(f"loading the model file : {model_path} ")
     model = torch.load(model_path)
