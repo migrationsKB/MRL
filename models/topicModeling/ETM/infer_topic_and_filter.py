@@ -16,7 +16,7 @@ from torch import nn
 from numpy import dot
 from numpy.linalg import norm
 
-from models.topicModeling.ETModel import data
+from models.topicModeling.ETM import data
 
 parser = argparse.ArgumentParser(description='Get confidence from centroid with ETM....')
 parser.add_argument('--lang_code', type=str, default="de", help="the language code for the ETM model")
@@ -318,20 +318,14 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir_lang):
         os.mkdir(output_dir_lang)
 
-    output_dir_ = os.path.join(output_dir_lang, str(args.dim))
-    if not os.path.exists(output_dir_):
-        os.mkdir(output_dir_)
-
-
     keywords = load_keywords(args.lang_code)
     tokens, counts, vocab, word2id, id2word = load_data_and_vocab(data_dir)
     df_file = os.path.join(data_dir, f"{args.lang_code}_non_empty.csv")
     df = pd.read_csv(df_file)
     model_path = f"output/models/ETM/{args.lang_code}_{num_topics}"
-    # model_path = glob(model_path_pattern)[0]
-    # model_path = "output/models/ETM/de/etm_tweets_K_50_Htheta_800_Optim_adam_Clip_0.0_ThetaAct_relu_Lr_0.005_Bsz_1000_RhoSize_300_trainEmbeddings_0_val_loss_2.496855906969676e+29_epoch_195"
+
     print(f"loading the model file : {model_path} ")
-    model = torch.load(model_path)
+    model = torch.load(model_path, map_location=torch.device('cpu'))
     model.to(device)
 
     # get the topic of data
@@ -343,7 +337,7 @@ if __name__ == '__main__':
         vocab,
         batch_size,
         device,
-        output_dir_)
+        output_dir_lang)
     # save results..
     save_to_results(df, tokens, topic2words, theta_weights_avg_ordered, theta_weights_sorted, confidence_cos, id2word,
-                    output_dir_)
+                    output_dir_lang)

@@ -1,0 +1,50 @@
+EN:
+  datasets:
+    sentiment_analysis:
+        "SemEval2017"
+    hate_speech_detection:
+        "HateXplain"
+  language_models:
+    "bert-base-uncased"
+    "distil-bert-uncased"
+    "robert-base"
+    "cardiffnlp/twitter-roberta-base"   # retrained on robert-base Twitter, english
+    "Hate-speech-CNERG/bert-base-uncased-hatexplain"  #https://huggingface.co/Hate-speech-CNERG/bert-base-uncased-hatexplain
+    "vinai/bertweet-large"  # bertTweet https://github.com/VinAIResearch/BERTweet
+DE:
+  datasets:
+    sentiment_analysis:
+      "GermEval2017"
+    hate_speech_detection:
+      ""
+    language_models:
+        "bert-base-german-cased" # https://www.deepset.ai/german-bert
+        "distilbert-base-german-cased"
+        "dbmdz/german-gpt2"  # https://huggingface.co/dbmdz/german-gpt2
+        "dbmdz/bert-base-german-uncased" # https://huggingface.co/dbmdz/bert-base-german-uncased
+        "deepset/bert-base-german-cased-sentiment-Germeval17" # deepset
+        "oliverguhr/german-sentiment-bert" # https://github.com/oliverguhr/german-sentiment
+        "deepset/bert-base-german-cased-hatespeech-GermEval18Coarse" # https://metatext.io/models/deepset-bert-base-german-cased-hatespeech-germeval18coarse
+FR:
+  datasets:
+    sentiment_analysis:
+      ""
+    hate_speech_detection:
+      ""
+    language_models:
+        "camembert-base" # https://huggingface.co/camembert-base
+
+ES:
+  datasets:
+    sentiment_analysis:
+      ""
+    hate_speech_detection:
+      ""
+    language_models:
+        "Hate-speech-CNERG/dehatebert-mono-spanish" # https://huggingface.co/dbmdz/bert-base-german-uncased
+
+MLMs:
+  "bert-base-multilingual-uncased" # 102 langs.
+  "xlm-roberta-base" # 2.5TB CC, 100langs
+  "cardiffnlp/twitter-xlm-roberta-base" # sota
+  "nlptown/bert-base-multilingual-uncased-sentiment"

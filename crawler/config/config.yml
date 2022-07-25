@@ -9,10 +9,7 @@ twitter_supported: [ 'fr', 'en', 'es', 'de', 'it', 'pt', 'nl', 'no',  'sv','fi',
                      'ar', 'ja', 'id', 'ko', 'tr', 'ru', 'fil', 'msa', 'zh-tw', 'zh-cn', 'hi', 'fa',
                      'ur', 'th', 'en-gb', 'und'
 ]
-twitterLangs: [ 'en',  'cs', 'da', 'de', 'el', 'es', 'fi', 'fr', 'hu', 'it', 'nl','no', 'pl', 'pt',
-                'ro', 'sv',
-                'ar', 'bn', 'fa', 'fil', 'he', 'hi', 'id', 'ja', 'ko', 'msa', 'th', 'tr', 'uk', 'ur',
-                'vi', 'zh-cn', 'zh-tw' ]
+
 EUCountries:
   Austria: "AT" #
   Belgium: "BE"

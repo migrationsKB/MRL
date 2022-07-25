@@ -3,7 +3,7 @@
 # 2021 Yiyi Chen, Karlsruhe, Germany
 # Project: ITFlows, EU Horizon
 # Released under a Creative Commons Attribution 4.0 International License.
-# email: yiyi.chen@fiz-karlsruhe.de
+# email: chen.yiyi@pm.me
 # -----------------------------------------------
 import os
 import gzip
@@ -19,18 +19,20 @@ import numpy as np
 import pandas as pd
 
 from utils.api_authen import load_academic_research_bearer
-from utils.utils import get_params, timing, chunks
+from utils.utils import get_params, timing
 from utils.logger import logger
 
 logger(output_file=f"{datetime.now()}.log")
+
+cwd = os.getcwd()
 
 
 @timing
 def get_last_start_time(dir_path: str) -> Any:
     """
-    Get the last earliest crawled dates for tweets as the end time for next crawling
+    Get the last earliest crawled dates for tweets as the end time for next round of crawling
     :param dir_path: path to the directory
-    :return:
+    :return: str or None
     """
     files = glob(dir_path + '/**.gz')
     print('nr of existing files:', len(files))
@@ -47,11 +49,12 @@ def get_last_start_time(dir_path: str) -> Any:
 
 
 @timing
-def query_main(api_name, country_iso2, keywords_list, idx, start_year, end_year, LEN_chunks, lang, Lang_def):
+def query_main(api_name, batch_idx, country_iso2, keywords_list, idx, start_year, end_year, LEN_chunks, lang, Lang_def):
     f"""
     specify hashtag operations
-    :param api_name:
-    :param country_iso2:
+    :param api_name: name of the api
+    :param country_iso2: iso2 code for the country
+    :param batch_idx: the index of the batch 
     :param keywords_list: list of keywords
     :param idx: the index of the keywords_list
     :param start_year: the start year
@@ -78,7 +81,6 @@ def query_main(api_name, country_iso2, keywords_list, idx, start_year, end_year,
     # idx batch of keywords
     keywords = keywords_list[idx]
 
-
     # output directory root output/crawled/
     # check if the data dir for a country exists.
     output_dir_root = os.path.join(cwd, 'output', 'crawled', country_iso2)
@@ -88,7 +90,7 @@ def query_main(api_name, country_iso2, keywords_list, idx, start_year, end_year,
     # the other 14 langauges.
     # batch2/lang/idx.
     # output_dir_root_batch = os.path.join(output_dir_root, "batch2")
-    output_dir_root_batch = os.path.join(output_dir_root, "batch3")
+    output_dir_root_batch = os.path.join(output_dir_root, batch_idx)
     if not os.path.exists(output_dir_root_batch):
         os.mkdir(output_dir_root_batch)
 
@@ -166,9 +168,11 @@ def query_main(api_name, country_iso2, keywords_list, idx, start_year, end_year,
     return response, output_dir_, country_iso2
 
 
-def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks, lang, LANG_DEF, flag=True):
+def crawler(api_name, batch_idx, country_iso2, keywords, idx, start_year, end_year, LEN_chunks, lang, LANG_DEF,
+            flag=True):
     t = datetime.today().strftime('%Y%m%d%H%M%S')
-    response, output_dir, countryiso2 = query_main(api_name, country_iso2, keywords, idx, start_year, end_year,
+    response, output_dir, countryiso2 = query_main(api_name, batch_idx, country_iso2, keywords, idx, start_year,
+                                                   end_year,
                                                    LEN_chunks, lang, LANG_DEF)
     while flag:
 
@@ -197,10 +201,9 @@ def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks
 
                 if flag:
                     time.sleep(5)
-                    main(api_name, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang, LANG_DEF,
-                         flag=True)
-
-                # TODO: CODES HERE GO INTO LOOPS, FIX. WITH THE LAST INDEX
+                    crawler(api_name, batch_idx, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang,
+                            LANG_DEF,
+                            flag=True)
 
             except Exception:
                 print(f'Exception {Exception}')
@@ -208,8 +211,9 @@ def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks
                     idx += 1
                     print('idx:', idx)
                     time.sleep(5)
-                    main(api_name, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang, LANG_DEF,
-                         flag=True)
+                    crawler(api_name, batch_idx, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang,
+                            LANG_DEF,
+                            flag=True)
                 break
 
         # no output
@@ -219,7 +223,9 @@ def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks
                 idx += 1
                 print('idx:', idx)
                 time.sleep(5)
-                main(api_name, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang, LANG_DEF, flag=True)
+                crawler(api_name, batch_idx, countryiso2, keywords, idx, start_year, end_year, LEN_chunks, lang,
+                        LANG_DEF,
+                        flag=True)
             else:
                 exit()
 
@@ -239,8 +245,9 @@ def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks
                 max_id = sorted([int(x) for x in os.listdir(output_dir_root)])[-1]
                 print('max id ', max_id)
                 time.sleep(5)
-                main(api_name, country_iso2, keywords, max_id, start_year, end_year, LEN_chunks, lang, LANG_DEF,
-                     flag=True)
+                crawler(api_name, batch_idx, country_iso2, keywords, max_id, start_year, end_year, LEN_chunks, lang,
+                        LANG_DEF,
+                        flag=True)
         else:
             flag = False
             print(response.text)
@@ -248,39 +255,25 @@ def main(api_name, country_iso2, keywords, idx, start_year, end_year, LEN_chunks
             break
 
 
-if __name__ == '__main__':
-    # import plac
-    # plac.call(main)
-    cwd = os.getcwd()
-    # batch one.
-    # infile = os.path.join(cwd, 'crawler', 'config', 'keywords', 'all.json')
-
-    # load one file of keywords.
-    # ga_keywords_file = os.path.join(cwd, 'crawler', 'config', 'keywords', 'ga.csv')
-    # ga_keywords =list(set(list(pd.read_csv(ga_keywords_file)['keyword'].str.lower())))
-    # lang = "ga"
-    # main(API_NAME, COUNTRY_ISO2, [ga_keywords], 0, "2013", "2022", len(ga_keywords), lang, "und")
-
-    # batch two, collecting tweets with specific languages.
-    # infile = os.path.join(cwd, 'crawler', 'config', 'keywords', 'all_2_dict.json')
-    # second batch:
-
-    ## third batch, mixed languages/
-    # countries:['GB', 'DE', 'SE', 'FR', 'IT', 'GR', 'ES', 'AT', 'HU', 'CH', 'PL', 'NL']
-    #     # 'BE', 'BG', 'CZ', 'DK',
-    #     # 'HR', 'CY', 'EE', 'FI',  'IE', 'LV', 'LT', 'LU',  'MT', 'PT', 'RO', 'SK',  'SI',
-    #     #  'IS', 'LI', 'NO']
-    API_NAME = "migrationsKB"
-    COUNTRY_ISO2 = None
-
-    # batch3. don't differentiate languages. twitter can differentiate.
+def main(COUNTRY_ISO2, batch_idx, start_year, end_year, idx=0, API_NAME="migrationsKB"):
     infile = os.path.join(cwd, 'crawler', 'config', 'keywords', 'all_2.json')
+
     with open(infile) as f:
         keywords_all = json.load(f)
-        # keywords_dict = json.load(f)
-    print(keywords_all)
+    print(f"the first chunk of keywords: {keywords_all[0]}")
     print(f"country {COUNTRY_ISO2}")
 
     LEN = len(keywords_all)
     print(f"length of keywords: {LEN} chunks")
-    main(API_NAME, COUNTRY_ISO2, keywords_all, 0, "2013", "2022", LEN, "", "mix")
+    crawler(API_NAME, batch_idx, COUNTRY_ISO2, keywords_all, idx, str(start_year), str(end_year), LEN, "", "mix")
+
+
+if __name__ == '__main__':
+    # third batch, mixed languages/
+    # countries:['GB', 'DE', 'SE', 'FR', 'IT', 'GR', 'ES', 'AT', 'HU', 'CH', 'PL', 'NL']
+    #     # 'BE', 'BG', 'CZ', 'DK',
+    #     # 'HR', 'CY', 'EE', 'FI',  'IE', 'LV', 'LT', 'LU',  'MT', 'PT', 'RO', 'SK',  'SI',
+    #     #  'IS', 'LI', 'NO']
+    import plac
+
+    plac.call(main)

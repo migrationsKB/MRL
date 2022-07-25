@@ -7,13 +7,13 @@ from transformers import PfeifferConfig, PfeifferInvConfig, TextClassificationPi
 from models.scripts.utils.data import *
 from models.scripts.utils.utils import *
 
-parser = argparse.ArgumentParser(description='Fine tuning xlmr modeling with SA or HSD')
+parser = argparse.ArgumentParser(description='Predicting with xlmr model for SA or HSD')
 parser.add_argument('--lang_code', type=str, default="en", help="The language of the dataset")
 parser.add_argument('--task', type=str, default="sa", help="sa or hsd")
 parser.add_argument('--checkpoint', type=str, default="cardiffnlp/twitter-xlm-roberta-base",
                     help="model from huggingface..")
 parser.add_argument("--test_mode", type=bool, default=False, help="whether to test a dataset or to infer...")
-parser.add_argument("--device", type=int, default=0, help="whether to test a dataset or to infer...")
+# parser.add_argument("--device_nr", type=int, default=0, help="which device of GPU to use")
 parser.add_argument("--use_adapter", type=bool, default=False, help="whether to use adapter or not")
 args = parser.parse_args()
 
@@ -33,8 +33,8 @@ if args.task == "sa":
     num_labels = 3
 
     if args.use_adapter:
-        adapter_subdir = args.checkpoint.replace("cardiffnlp/", "")
-        adapter_dir = f"output/twitter_xlmr_sentiments/{adapter_subdir}/{lang}/"
+        # adapter_subdir = args.checkpoint.replace("cardiffnlp/", "")
+        adapter_dir = f"output/models/SA/{lang}/"
         adapter_name = f"sentiment-{lang}"
 
         adapter_path = os.path.join(adapter_dir, adapter_name)
@@ -53,14 +53,14 @@ elif args.task == "hsd":
     else:
         num_labels = 2
     if args.use_adapter:
-        adapter_dir = f"output/xlmr_hatespeech/{lang}/"
+        adapter_dir = f"output/models/HSD/{lang}/"
         adapter_name = f"hsd-{lang}"
         adapter_path = os.path.join(adapter_dir, adapter_name)
         print(f"adapter {adapter_name} from path {adapter_path}")
 
     mapping_dict = {
         "german": "de", "spanish": "es", "dutch": "nl", "hungarian": "hu", "polish": "pl",
-        "swedish": "sv", "finnish": "fi", "en": "en", "french": "fr", "italian": "it", "greek": "el"
+        "swedish": "sv", "finnish": "fi", "english": "en", "french": "fr", "italian": "it", "greek": "el"
     }
     # get the path of datasets
     if args.test_mode:
@@ -79,6 +79,8 @@ else:
     adapter_path = None
     print('Task can either be sentiment analysis (sa) or hate speech detection (hsd)')
 
+# args.checkpoint could be "cardiffnlp/twitter-roberta-base-sentiment", only for English.
+# if args.task == "hsd":
 tokenizer, model = load_model_tokenizer(args.checkpoint, num_labels, heads=False, classify=True)
 
 # train an adapter
@@ -100,7 +102,8 @@ if args.use_adapter:
 # model.active_adapters = Stack("de", "hsd-en")
 
 # initialize pretrained model and tokenizer.
-classifier = TextClassificationPipeline(model=model, tokenizer=tokenizer, framework="pt", device=args.device)
+# classifier = TextClassificationPipeline(model=model, tokenizer=tokenizer, framework="pt", device=args.device_nr)
+classifier = TextClassificationPipeline(model=model, tokenizer=tokenizer, framework="pt")
 
 print("evaluating on ", dataset_path)
 if args.test_mode:
