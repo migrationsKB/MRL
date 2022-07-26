@@ -21,17 +21,11 @@ def extract_tweets_from_one_file_by_lang(filepath, language):
         lang = tweet['lang']
         if lang == language:
             tweets.append(tweet)
-    if "includes" in data:
-        new_data = {
-            'data': tweets,
-            'meta': data['meta'],
-            'includes': data['includes']
-        }
-    else:
-        new_data = {
-            'data': tweets,
-            'meta': data['meta'],
-        }
+    new_data = {
+        'data': tweets,
+        'meta': data['meta'] if "meta" in data else None,
+        'includes': data['includes'] if "includes" in data else None
+    }
     return new_data
 
 
@@ -95,40 +89,26 @@ def restructure_crawled_tweets(data_dir, output_dir, country, lang):
     # get statistics of the data_dict.
     stats_dict, tweet_dict = get_tweet_dict_and_stats(data_dict)
     print(f"stats of tweets by countries {stats_dict}")
-    output_file = os.path.join(output_dir, f'{country}-{lang}.json')
-    print(f"output file to {output_file}...")
-    with open(output_file, 'w') as file:
+    with open(os.path.join(output_dir, f'{country}-{lang}.json'), 'w') as file:
         json.dump(tweet_dict, file)
 
 
-def restructure_batch_data(batch, output_dir, by_lang):
+def restructure_batch_data(output_dir, by_lang):
     config = load_config()
     countries = config['countries']
     print(f"countries crawled tweets {countries}")
     for country in countries:
-        if batch is not None:
-            crawled_data_path = f"output/crawled/{country}/{batch}"
-        else:
-            crawled_data_path = f"output/crawled/{country}"
-        if os.path.exists(crawled_data_path):
-            print(f"Data in {crawled_data_path} is being restructured...")
+        crawled_data_path = f"output/crawled/{country}/"
+        file = os.path.join(output_dir, f'{country}-{by_lang}.json')
+        if not os.path.exists(file):
             restructure_crawled_tweets(crawled_data_path, output_dir, country, by_lang)
-
-
-def main(by_lang=None, batch_idx=None, restructured_data_path="output/preprocessed/restructured"):
-    if not os.path.exists(restructured_data_path):
-        os.mkdir(restructured_data_path)
-    if by_lang is not None:
-        print(f"restructuring data in language {by_lang}...")
-        restructure_batch_data(batch_idx, restructured_data_path, by_lang=by_lang)
-    else:
-        for lang_ in ['en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']:
-            print(f"restructuring data in language {lang_}...")
-            restructure_batch_data("batch1", restructured_data_path, by_lang=lang_)
 
 
 if __name__ == '__main__':
     # countries: ['GB', 'DE', 'SE', 'FR', 'IT', 'GR', 'ES', 'AT', 'HU', 'CH', 'PL', 'NL']
     # langs: ['en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']
-    import plac
-    plac.call(main)
+
+    restructured_data_path = "output/preprocessed/restructured"
+    # "en"
+    for lang_ in ['fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']:
+        restructure_batch_data(restructured_data_path, by_lang=lang_)

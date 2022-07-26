@@ -1,0 +1,11 @@
+requests
+pyyaml
+numpy
+pandas
+scikit-learn
+scipy
+matplotlib
+pandarallel
+simplemma
+stopwordsiso
+

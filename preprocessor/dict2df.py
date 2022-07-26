@@ -137,6 +137,8 @@ if __name__ == '__main__':
     # langs: ['en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']
     input_dir = 'output/preprocessed/restructured'
     out_dir = 'output/preprocessed/csv/'
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
     for filename in os.listdir(input_dir):
         if filename.endswith('.json'):
             country_lang_code = filename.replace('.json', '')

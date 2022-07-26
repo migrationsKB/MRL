@@ -23,7 +23,6 @@ SPECIAL_CHARS = ['&nbsp;', '&lt;', '&gt;', '&amp;', '&quot;', '&apos;', '&cent;'
                  '&copy;', '&reg;']
 
 
-
 # https://gist.github.com/slowkow/7a7f61f495e3dbb7e3d767f97bd7304b
 
 def get_entities_positions(entities: Any, entity_name: str) -> List[Tuple]:
@@ -106,33 +105,43 @@ def preprocessing_one_tweet(tweet, crawled=False, tp=False, lid=False):
         # remove urls
         text = Patterns.URL_PATTERN.sub(r'', text)
         # remove user mentions
-        text = Patterns.MENTION_PATTERN.sub(r'', text)
+        text = Patterns.MENTION_PATTERN.sub(r'@user', text)
         if lid:
             # remove hashtags:
             text = Patterns.HASHTAG_PATTERN.sub(r'', text)
         # remove "#"
-        text = text.replace("#", '')
+        # text = text.replace("#", '').replace("@url", "").replace("@USER", "@user")
+        text = text.replace("@url", "").replace("@USER", "@user")
 
     # remove special chars, starting with &.
     for CHAR in SPECIAL_CHARS:
         text = text.replace(CHAR, '')
     # remove reserved words
     text = Patterns.RESERVED_WORDS_PATTERN.sub(r'', text)
-    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
 
-    if tp or lid:
+    # if tp or lid:
+    #     # remove emojis
+    #     text = Patterns.EMOJIS_PATTERN.sub(r'', text)
+    #     # remove smileys
+    #     text = Patterns.SMILEYS_PATTERN.sub(r'', text)
+    #     # remove accented characters
+
+    # special for topic modeling:
+    if tp:
+        # problem with languages like greek
+        # text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+
         # remove emojis
         text = Patterns.EMOJIS_PATTERN.sub(r'', text)
         # remove smileys
         text = Patterns.SMILEYS_PATTERN.sub(r'', text)
-        # remove accented characters
 
-    # special for topic modeling:
-    if tp:
+        # remove accented characters
         # remove numbers
         text = Patterns.NUMBERS_PATTERN.sub(r'', text)
+        text = re.sub(r'\d+', '', text)
         # remove punctuations
-        text = text.translate(str.maketrans('', '', string.punctuation))
+        text = text.translate(str.maketrans('', '', string.punctuation+"—…„“–”"))
 
         # lower-cased, tokenized and lemmatized
         text = text_lemmatizer(text.lower(), langdata=langdata)
@@ -142,7 +151,7 @@ def preprocessing_one_tweet(tweet, crawled=False, tp=False, lid=False):
             text.remove(i)
 
         if len(text) > 1:
-            return ' '.join(text)
+            return ' '.join(text).lower()
 
     else:
         # tokenized = tt.tokenize(text)
@@ -150,6 +159,8 @@ def preprocessing_one_tweet(tweet, crawled=False, tp=False, lid=False):
         #     # remove unnecessary characters.
         #     return ' '.join(text.split())
         # else:
+        text = text.replace('\n', '').replace('\r', '')
+        text = re.sub(' +', ' ', text)
         return text
 
 
@@ -164,14 +175,14 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
     count = 0
     # original_texts = []
     preprocessed_texts = []
-    preprocessed_texts_cl = []
+    preprocessed_texts_sa =[]
     # preprocessed_texts_langid = []
     countries = load_config()['countries']
     countries_ = []
     dates = []
     ids = []
     for country in countries:
-        print(country)
+
         test_file = f'output/preprocessed/restructured/{country}-{lang_code}.json'
 
         with open(test_file) as f:
@@ -179,26 +190,25 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
         # for tweet_id, tweet in dict(itertools.islice(data.items(), example_nr)).items():
         for tweet_id, tweet in data.items():
             # preprocessed_text_for_langid = preprocessing_one_tweet(tweet, True)
-            preprocessed_text_cl = preprocessing_one_tweet(tweet, crawled=crawled, tp=False, lid=False)
             preprocessed_text = preprocessing_one_tweet(tweet, crawled=crawled, tp=tp, lid=lid)
+            preprocessed_sa = preprocessing_one_tweet(tweet, crawled=crawled, tp=False, lid=False)
             if preprocessed_text is not None:
                 # print(preprocessed_text)
                 # original_texts.append(tweet['text'])
                 dates.append(tweet['created_at'])
                 preprocessed_texts.append(preprocessed_text)
-                preprocessed_texts_cl.append(preprocessed_text_cl)
+                preprocessed_texts_sa.append(preprocessed_sa)
                 # preprocessed_texts_langid.append(preprocessed_text_for_langid)
                 ids.append(tweet_id)
 
                 countries_.append(country)
 
-                print('*' * 40)
             count += 1
     df['id'] = ids
     df['created_at'] = dates
     # df['text'] = original_texts
     df['preprocessed_text'] = preprocessed_texts
-    df["preprocessed_cl"] = preprocessed_texts_cl
+    df['preprocessed_cl'] = preprocessed_texts_sa
     df['country'] = countries_
     # df['preprocessed_text_langid'] = preprocessed_texts_langid
     df.to_csv(os.path.join(output_dir, f'{lang_code}.csv'), index=False)
@@ -207,17 +217,21 @@ def preprocessing_files_by_lang(lang_code, output_dir, crawled, tp, lid):
 
 
 if __name__ == '__main__':
+    # lang_code = "de"
+    example_nr = 10
     output_dir = "output/preprocessed/forTP"
-    for lang_code in ['en', 'fi', 'fr', 'de', 'el', 'nl', 'hu', 'ga', 'it', 'pl', 'es', 'sv']:
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
 
-        tp = True  # for topic modeling
-        crawled = True  # for crawled tweets
-        lid = False  # for language identification
-
-        # lemmatizer
+    tp = True  # for topic modeling
+    crawled = True  # for crawled tweets
+    lid = False  # for language identification
+    # ["fi", "fr", "el", "nl", "hu", "it", "pl", "es", "sv"]
+    # en, de, el, fr, es,fi, it, nl, pl
+    for lang_code in ["fi", "fr", "el", "nl", "hu", "it", "pl", "es", "sv", "en", "de"]:
+        print(lang_code)
         if tp:
             langdata = simplemma.load_data(lang_code)
             stopwords = stopwordsiso.stopwords(lang_code)
             preprocessing_files_by_lang(lang_code=lang_code, output_dir=output_dir, crawled=crawled, tp=tp, lid=lid)
+        print('*' * 10)
