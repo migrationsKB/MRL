@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 
 for x in range(args.min_topics, args.max_topics+5, 5):
-    command = f"CUDA_VISIBLE_DEVICES={args.device} python -m models.ETModel.main --mode train --num_topics {x}  --lang_code {args.lang_code}"
+    command = f"CUDA_VISIBLE_DEVICES={args.device} python -m models.topicModeling.ETM.main --mode train --num_topics {x}  --lang_code {args.lang_code}"
     subprocess.run(command, shell=True, check=True, capture_output=True)
 
 
